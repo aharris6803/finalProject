@@ -8,7 +8,11 @@ class card:
 
 suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 ranks = ['Ace', 'King', 'Queen', 'Jack', '10', '9']
-deck = [f"{rank} of {suit}" for suit in suits for rank in ranks]
+deck = []
+for suit in suits:
+    for rank in ranks:
+        deck.append(suit, rank)
+
 
 p1Hand = []
 p2Hand = []

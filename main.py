@@ -1,4 +1,5 @@
 import random
+from operator import truediv
 
 p1Score = 0
 p2Score = 0
@@ -20,8 +21,8 @@ class card:
 
 def shuffle():
     global deck
-    suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
-    ranks = ['Ace', 'King', 'Queen', 'Jack', '10', '9']
+    suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
+    ranks = ["Ace", "King", "Queen", "Jack", "10", "9"]
     deck = []
     tempdeck = []
     for suit in suits:
@@ -56,20 +57,74 @@ def deal(start):#true if it's player 2 dealing, false if it's player one to deal
             p2Hand.append(deck.pop())
 
 
-def p2_choose_trump(option, open_choice):#open_choice is true if you can choose any suit, pick_up is true if p2 would have to pick up the card
-    global trump
+def p2choosetrump(option, open_choice):#open_choice is true if you can choose any suit, pick_up is true if p2 would have to pick up the card
+    global trump, p2suits
     p2suits = []
     for botsdsd in p2Hand:
         p2suits.append(botsdsd.suit)
-    if p2suits.count(option.suit) >= 2:
-        return True
+    if not open_choice:
+        if p2suits.count(option.suit) >= 2:
+            return True
+    else:
+        if p2suits.count(mostcommon(p2suits)) > 2:
+            return True
+    return False
 
 
-def p2_discard():
-    pass
+def p2sorthand():#should sort p2hand by how good the cards are
+    global p2hand
+    overallrank = []
+    suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
+    suits.remove(trump.suit)
+    ranks = ["Ace", "King", "Queen", "Jack", "10", "9"]
+    overallrank.append(card(trump.suit, "Jack"))
+    if trump.suit == "Diamonds":
+        overallrank.append(card("Hearts", "Jack"))
+    elif trump.suit == "Hearts":
+        overallrank.append(card("Diamonds", "Jack"))
+    elif trump.suit == "Clubs":
+        overallrank.append(card("Spades", "Jack"))
+    elif trump.suit == "Spades":
+        overallrank.append(card("Clubs", "Jack"))
+    for rank in ranks:
+        if not rank == "Jack":
+            overallrank.append(card(trump.suit, rank))
+    for suit in suits:
+        for rank in ranks:
+            if not (rank == overallrank[1].rank and suit == overallrank[1].suit):
+                overallrank.append(card(suit, rank))
+    p2hand.sort(key=forsort)
 
 
-def choose_trump(start):#start is true if P2 deals, returns true if player one is offense and false if player two is offense
+def forsort(inputcard):
+    overallrank = []
+    suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
+    suits.remove(trump.suit)
+    ranks = ["Ace", "King", "Queen", "Jack", "10", "9"]
+    overallrank.append(card(trump.suit, "Jack"))
+    if trump.suit == "Diamonds":
+        overallrank.append(card("Hearts", "Jack"))
+    elif trump.suit == "Hearts":
+        overallrank.append(card("Diamonds", "Jack"))
+    elif trump.suit == "Clubs":
+        overallrank.append(card("Spades", "Jack"))
+    elif trump.suit == "Spades":
+        overallrank.append(card("Clubs", "Jack"))
+    for rank in ranks:
+        if not rank == "Jack":
+            overallrank.append(card(trump.suit, rank))
+    for suit in suits:
+        for rank in ranks:
+            if not (rank == overallrank[1].rank and suit == overallrank[1].suit):
+                overallrank.append(card(suit, rank))
+    return overallrank.index(inputcard)
+
+
+def mostcommon(lst):
+    return max(set(lst), key=lst.count)
+
+
+def choosetrump(start):#start is true if P2 deals, returns true if player one is offense and false if player two is offense
     global trump, reset, p1Hand, p2Hand
     crd = deck.pop()
     print(crd)
@@ -80,7 +135,7 @@ def choose_trump(start):#start is true if P2 deals, returns true if player one i
             trump = card(crd.suit, 0)
             reset = False
             return True
-        elif p2_choose_trump(crd, False):
+        elif p2choosetrump(crd, False):
             p1Hand.pop(int(input("P2 has taken offense. P1, what card do you want to clear?(Write the index of the card in your hand) ")))
             p1Hand.append(crd)
             trump = card(crd.suit, 0)
@@ -90,15 +145,15 @@ def choose_trump(start):#start is true if P2 deals, returns true if player one i
             trump = card(input("What suit? "), 0)
             reset = False
             return True
-        elif p2_choose_trump(crd, True):
-            trump = card(input("What suit? "), 0)
+        elif p2choosetrump(crd, True):
+            trump = card(mostcommon(p2suits), 0)
             reset = False
             return False
         else:
             print("Replaying hand")
             return True
     else:
-        if p2_choose_trump(crd, False):
+        if p2choosetrump(crd, False):
             p2Hand.pop(int(input("What card do you want to clear?(Write the index of the card in your hand) ")))
             p2Hand.append(crd)
             trump = card(crd.suit, 0)
@@ -110,8 +165,8 @@ def choose_trump(start):#start is true if P2 deals, returns true if player one i
             trump = card(crd.suit, 0)
             reset = False
             return True
-        elif p2_choose_trump(crd, True):
-            trump = card(input("What suit? "), 0)
+        elif p2choosetrump(crd, True):
+            trump = card(mostcommon(p2suits), 0)
             reset = False
             return False
         elif input("P1, do you want to choose trump suit?(y/n)") == "y":
@@ -161,12 +216,7 @@ def win(player1card, player2card, lead):#Lead is true when P1 leads, returns tru
             return True
 
 
-def score(p1_tricks, p2_tricks, p1_off):#adds score to correct players score(logic needed)
-    global p1Score, p2Score
-    pass
-
-
-def choose_card(p1card, do_lead):#do_lead is true if p2 leads and therefore ignores the p1card input which should be null
+def choosecard(p1card, do_lead):#do_lead is true if p2 leads and therefore ignores the p1card input which should be null
     global p2Hand
     chosen_card = p2Hand.pop(0)#logic needed
     return chosen_card
@@ -192,14 +242,15 @@ while play:
         continue
     shuffle()
     deal(player_1_deals)
+    p2sorthand()
     print("Player 1 hand")
     print("{")
     for x in p1Hand:
         print(x)
     print("}")
     while reset:
-        player_1_off = choose_trump(True)
-    reset = False
+        player_1_off = choosetrump(True)
+    reset = True
     print("Player 1 hand ")
     print("{")
     for x in p1Hand:
@@ -213,9 +264,9 @@ while play:
         if player_1_lead:
             p1input = int(input("P1, what card do you want to play?(Write the index of the card in your hand) "))
             p1card = p1Hand[p1input]
-            p2card = choose_card(p1card, False)
+            p2card = choosecard(p1card, False)
         else:
-            p2card = choose_card(card, True)
+            p2card = choosecard(card, True)
             print(f"P2 plays the {p2card}")
             p1input = int(input("P1, what card do you want to play?(Write the index of the card in your hand) "))
             p1card = p1Hand[p1input]

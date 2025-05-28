@@ -113,20 +113,32 @@ def choosetrump(start):#start is true if P2 deals, returns true if player one is
     print(f"The possible trump is the {crd}")
     if start:
         if input("Do you want the trump card?(y/n)") == "y":
-            p1Hand.pop(int(input("What card do you want to discard?(Write the index of the card in your hand) ")))
+            trumpinput = int(input("What card do you want to discard?(Write the index of the card in your hand) "))
+            while not (0 <= trumpinput < len(p1Hand)):
+                print("Index out of bounds.")
+                trumpinput = int(input("What card do you want to play?(Write the index of the card in your hand) "))
+            p1Hand.pop(trumpinput)
             p1Hand.append(crd)
             trump = card(crd.suit, 0)
             reset = False
             return True
         elif p2choosetrump(crd, False):
-            trump = card(crd.suit, 0)
-            p2sorthand()
-            p2Hand.pop(4)
+            print("Player 2 is forcing you to pick up the trump card.")
+            trumpinput = int(input("What card do you want to discard?(Write the index of the card in your hand) "))
+            while not (0 <= trumpinput < len(p1Hand)):
+                print("Index out of bounds.")
+                trumpinput = int(input("What card do you want to discard?(Write the index of the card in your hand) "))
+            p1Hand.pop(trumpinput)
             p1Hand.append(crd)
+            trump = card(crd.suit, 0)
             reset = False
             return False
         elif input("Do you want to choose trump suit?(y/n)") == "y":
-            trump = card(input("What suit? "), 0)
+            inputsuit = input("What suit? ")
+            while inputsuit != "Hearts" and inputsuit != "Spades" and inputsuit != "Diamonds" and inputsuit != "Jacks":
+                print("Not a suit. Suits are: Hearts, Diamonds, Jacks, and Spades.")
+                inputsuit = input("What suit? ")
+            trump = card(inputsuit, 0)
             reset = False
             return True
         elif p2choosetrump(crd, True):
@@ -139,25 +151,34 @@ def choosetrump(start):#start is true if P2 deals, returns true if player one is
             return True
     else:
         if p2choosetrump(crd, False):
-            p2Hand.pop(int(input("What card do you want to clear?(Write the index of the card in your hand) ")))
-            p2Hand.append(crd)
-            trump = card(crd.suit, 0)
-            reset = False
-            return False
-        elif input("P2 has passed, do you want the trump card?(y/n)") == "y":
+            print("Player 2 takes trump.")
             trump = card(crd.suit, 0)
             p2sorthand()
             p2Hand.pop(4)
             p2Hand.append(crd)
             reset = False
+            return False
+        elif input("P2 has passed, do you want the trump card?(y/n)") == "y":
+            trumpinput = int(input("What card do you want to discard?(Write the index of the card in your hand) "))
+            while not (0 <= trumpinput < len(p1Hand)):
+                print("Index out of bounds.")
+                trumpinput = int(input("What card do you want to discard?(Write the index of the card in your hand) "))
+            p1Hand.pop(trumpinput)
+            p1Hand.append(crd)
+            trump = card(crd.suit, 0)
+            reset = False
             return True
         elif p2choosetrump(crd, True):
             trump = card(mostcommon(p2suits), 0)
-            print(f"P2 has chosen {trump.suit}")
+            print(f"P2 chooses {trump.suit} as the suit")
             reset = False
             return False
         elif input("Do you want to choose trump suit?(y/n)") == "y":
-            trump = card(input("What suit? "), 0)
+            inputsuit = input("What suit? ")
+            while inputsuit != "Hearts" and inputsuit != "Spades" and inputsuit != "Diamonds" and inputsuit != "Jacks":
+                print("Not a suit. Suits are: Hearts, Diamonds, Jacks, and Spades.")
+                inputsuit = input("What suit? ")
+            trump = card(inputsuit, 0)
             reset = False
             return True
         else:
@@ -223,40 +244,57 @@ def returnlegal(leadcard):
     for mamds in p2Hand:
         if mamds.suit == leadcard.suit:
             legalhand.append(mamds)
-        if mamds.suit != trump.suit and mamds.color == trump.color and mamds.rank == "Jack":
-            legalhand.append(mamds)
+    if legalhand == []:
+        for ands in p2Hand:
+            if ands.suit != trump.suit and ands.color == trump.color and ands.rank == "Jack":
+                legalhand.append(ands)
+            if ands.suit == trump.suit:
+                legalhand.append(ands)
     return legalhand
 
 
+print("All inputs are case sensitive. Make sure 'y' is lowercase and the first letter of suits are uppercase.")
+if input("Do you know the rules of Euchre?(y/n) ") == "n":
+    print("Two handed Euchre is played by two players with a deck of 24 cards(the 9, 10, Jack, Queen, and King of every suit. \n"
+          "The game begins by dealing each player 5 cards. Whoever was dealt to then has the option to discard one of their \n"
+          "cards for the trump card, which is face up in the middle. If they decide to pass, the other player can still force \n"
+          "them to discard a card and pick up the trump card. If neither player wants the trump card, the first player can \n"
+          "choose any suit to become trump or pass, giving the choice to the other player. If both players pass, the hand \n"
+          "is replayed. After "
+          "Good luck!")
 round=0
 while play:
     global trump, reset, p1Hand, p2Hand
-    round+=1
     reset = True
     if p1Score>=10:
         play=False
-        print(f"P1 wins. Final score: {p1Score}-{p2Score}")
+        print(f"P1 wins in {round} rounds. Final score: {p1Score}-{p2Score}")
         continue
     if p2Score>=10:
         play=False
-        print(f"P2 wins. Final score: {p2Score}-{p1Score}")
+        print(f"P2 wins in {round} rounds. Final score: {p2Score}-{p1Score}")
         continue
-    print(f"Round {round}, current score: P1: {p1Score} - P2: {p2Score}, Player one to lead: {player_1_off}")
-    shuffle()
-    deal(player_2_deals)
-    print("Player 1 hand")
-    print("{")
-    for x in p1Hand:
-        print(x)
-    print("}")
+    round+=1
+    print(f"Round {round}, current score: P1: {p1Score} - P2: {p2Score}, Player two to deal: {player_2_deals}")
     while reset:
+        shuffle()
+        deal(player_2_deals)
+        print("Your hand")
+        print("{")
+        x = 0
+        for asdsad in p1Hand:
+            print(f"{x}. {asdsad}")
+            x += 1
+        print("}")
         player_1_off = choosetrump(player_2_deals)
     reset = True
     p2sorthand()
-    print("Player 1 hand ")
+    print("Your hand")
     print("{")
-    for x in p1Hand:
-        print(x)
+    x=0
+    for qwwqe in p1Hand:
+        print(f"{x}. {qwwqe}")
+        x += 1
     print("}")
     player_1_tricks = 0
     player_2_tricks = 0
@@ -264,6 +302,9 @@ while play:
     while len(p1Hand) > 0:
         if player_1_lead:
             p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
+            while not (0 <= p1input < len(p1Hand)):
+                print("Index out of bounds.")
+                p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
             p1card = p1Hand[p1input]
             p2card = p2Hand[choosecard(p1card, False)]
             p2Hand.remove(p2card)
@@ -272,22 +313,45 @@ while play:
             p2Hand.remove(p2card)
             print(f"P2 plays the {p2card}")
             p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
+            while not (0 <= p1input < len(p1Hand)):
+                print("Index out of bounds.")
+                p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
             p1card = p1Hand[p1input]
             p1Suits = []
             for suity in p1Hand:
                 p1Suits.append(suity.suit)
-            while (p1card.suit != p2card.suit and p2card.suit in p1Suits) or (p2card.rank == "Jack" and p2card.suit != trump.suit and p2card.color == trump.color and p1card.suit == trump.suit):
-                print("Not a valid play.")
-                p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
-                p1card = p1Hand[p1input]
+            if p2card.rank == "Jack" and p2card.suit != trump.suit and p2card.color == trump.color:
+                while p1card.suit != trump.suit and trump.suit in p1Suits:
+                    print("You must follow suit. The Jack of the same color as the trump counts as a card of trump suit.")
+                    p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
+                    while not (0 <= p1input < len(p1Hand)):
+                        print("Index out of bounds.")
+                        p1input = int(
+                            input("What card do you want to play?(Write the index of the card in your hand) "))
+                    p1card = p1Hand[p1input]
+            else:
+                while p1card.suit != p2card.suit and p2card.suit in p1Suits:
+                    print("You must follow suit. ")
+                    p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
+                    while not (0 <= p1input < len(p1Hand)):
+                        print("Index out of bounds.")
+                        p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
+                    p1card = p1Hand[p1input]
         if win(p1Hand.pop(p1input), p2card, player_1_lead):
             player_1_tricks+=1
             player_1_lead = True
-            print(f"P1 wins the trick, {p1card} vs {p2card}. Trump is {trump.suit}. The score is now P1: {player_1_tricks} - P2: {player_2_tricks}")
+            print(f"P1 wins the trick, P1: {p1card} vs P2: {p2card}. Trump is {trump.suit}. The score is now P1: {player_1_tricks} - P2: {player_2_tricks}")
         else:
             player_2_tricks += 1
             player_1_lead = False
-            print(f"P2 wins the trick, {p2card} vs {p1card}. Trump is {trump.suit}. The score is now P1: {player_1_tricks} - P2: {player_2_tricks}")
+            print(f"P2 wins the trick, P1: {p1card} vs P2: {p2card}. Trump is {trump.suit}. The score is now P1: {player_1_tricks} - P2: {player_2_tricks}")
+        print("Your hand")
+        print("{")
+        x=0
+        for sadds in p1Hand:
+            print(f"{x}. {sadds}")
+            x += 1
+        print("}")
     if player_1_off:
         if player_2_tricks >=3:
             p2Score +=2

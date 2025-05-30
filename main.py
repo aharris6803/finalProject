@@ -92,8 +92,8 @@ def forsort(inputcard):
     for rank in ranks:
         if not rank == "Jack":
             overallrank.append(card(trump.suit, rank))
-    for suit in suits:
-        for rank in ranks:
+    for rank in ranks:
+        for suit in suits:
             if not (rank == overallrank[1].rank and suit == overallrank[1].suit):
                 overallrank.append(card(suit, rank))
     x = 0
@@ -158,7 +158,7 @@ def choosetrump(start):#start is true if P2 deals, returns true if player one is
             p2Hand.append(crd)
             reset = False
             return False
-        elif input("P2 has passed, do you want the trump card?(y/n)") == "y":
+        elif input("P2 has passed, do you want to force them to take the trump card?(y/n)") == "y":
             trumpinput = int(input("What card do you want to discard?(Write the index of the card in your hand) "))
             while not (0 <= trumpinput < len(p1Hand)):
                 print("Index out of bounds.")
@@ -191,11 +191,12 @@ def win(player1card, player2card, lead):#Lead is true when P1 leads, returns tru
     if lead:
         if player1card.suit == trump.suit and player1card.rank == "Jack":
             return True
+        elif player2card.suit == trump.suit and player2card.rank == "Jack":
+            return False
         elif player1card.rank == "Jack" and trump.color == player1card.color:
-            if player2card.suit == trump.suit and player2card.rank == "Jack":
-                return False
-            else:
-                return True
+            return True
+        elif player2card.rank == "Jack" and trump.color == player2card.color:
+            return False
         elif player1card.suit != player2card.suit:
             if player2card.suit == trump.suit:
                 return False
@@ -208,11 +209,12 @@ def win(player1card, player2card, lead):#Lead is true when P1 leads, returns tru
     else:
         if player2card.suit == trump.suit and player2card.rank == "Jack":
             return False
+        elif player1card.suit == trump.suit and player1card.rank == "Jack":
+            return True
         elif player2card.rank == "Jack" and trump.color == player2card.color:
-            if player1card.suit == trump.suit and player1card.rank == "Jack":
-                return True
-            else:
-                return False
+            return False
+        elif player1card.rank == "Jack" and trump.color == player1card.color:
+            return True
         elif player2card.suit != player1card.suit:
             if player1card.suit == trump.suit:
                 return True
@@ -230,9 +232,13 @@ def choosecard(p1card, do_lead):#do_lead is true if p2 leads and therefore ignor
         if returnlegal(p1card) != []:
             legal = returnlegal(p1card)
             if not win(p1card, legal[0], True):
-                return p2Hand.index(legal[0])
+                diddi = 0
+                for x in range(len(legal)):
+                    if not win(p1card, legal[0], True):
+                        diddi = x
+                return p2Hand.index(legal[diddi])
             else:
-                return len(p2Hand)-1
+                return p2Hand.index(legal[len(legal)-1])
         else:
             return len(p2Hand)-1
     else:
@@ -242,6 +248,8 @@ def choosecard(p1card, do_lead):#do_lead is true if p2 leads and therefore ignor
 def returnlegal(leadcard):
     legalhand = []
     for mamds in p2Hand:
+        if mamds.suit != trump.suit and mamds.color == trump.color and mamds.rank == "Jack" and leadcard.suit == trump.suit:
+            legalhand.append(mamds)
         if mamds.suit == leadcard.suit:
             legalhand.append(mamds)
     if legalhand == []:
@@ -253,14 +261,23 @@ def returnlegal(leadcard):
     return legalhand
 
 
-print("All inputs are case sensitive. Make sure 'y' is lowercase and the first letter of suits are uppercase.")
+print("All inputs are case sensitive. Make sure 'y' or 'n' is lowercase and the first letter of suits are uppercase.")
 if input("Do you know the rules of Euchre?(y/n) ") == "n":
     print("Two handed Euchre is played by two players with a deck of 24 cards(the 9, 10, Jack, Queen, and King of every suit. \n"
           "The game begins by dealing each player 5 cards. Whoever was dealt to then has the option to discard one of their \n"
           "cards for the trump card, which is face up in the middle. If they decide to pass, the other player can still force \n"
           "them to discard a card and pick up the trump card. If neither player wants the trump card, the first player can \n"
           "choose any suit to become trump or pass, giving the choice to the other player. If both players pass, the hand \n"
-          "is replayed. After "
+          "is replayed. After choosing the trump, whoever chose trump leads by playing a card from their hand. \n"
+          "The goal is to play a better card than your opponent to win the trick. The other player \n"
+          "must play a card of the same suit, if able. Scoring is as follows: The best card is the Jack of trump suit, \n"
+          "followed by the Jack of the same color as the trump suit. This jack counts as a card of the trump suit when it's \n"
+          "played as the lead card. Next is Ace, King, Queen, 10, and 9 of trump suit. After that, it's Ace, King, Queen, \n"
+          "Jack, 10, 9 of any other suit. For example, if trump is spades and player one leads with the jack of clubs, and \n"
+          "player two has the queen of spades, then player two has to play the queen, and player one will win the trick. \n"
+          "After both players have played all of their cards, whoever won more tricks gets 1 point. If the player won 5-0, \n"
+          "they get 2 points instead. If the player that won was not the player that chose the trump suit, they get an \n"
+          "'Euchre' and get 2 points instead. Hands are played until one player gets to 10 points. \n"
           "Good luck!")
 round=0
 while play:
@@ -293,6 +310,13 @@ while play:
     print("{")
     x=0
     for qwwqe in p1Hand:
+        print(f"{x}. {qwwqe}")
+        x += 1
+    print("}")
+    print("P2 hand")
+    print("{")
+    x = 0
+    for qwwqe in p2Hand:
         print(f"{x}. {qwwqe}")
         x += 1
     print("}")
@@ -330,7 +354,7 @@ while play:
                             input("What card do you want to play?(Write the index of the card in your hand) "))
                     p1card = p1Hand[p1input]
             else:
-                while p1card.suit != p2card.suit and p2card.suit in p1Suits:
+                while p1card.suit != p2card.suit and p2card.suit in p1Suits and (p1card.suit != trump.suit and p1card.color == trump.color and p1card.rank == "Jack"):
                     print("You must follow suit. ")
                     p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
                     while not (0 <= p1input < len(p1Hand)):

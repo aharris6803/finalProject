@@ -143,11 +143,11 @@ def choosetrump(start):#start is true if P2 deals, returns true if player one is
             return True
         elif p2choosetrump(crd, True):
             trump = card(mostcommon(p2suits), 0)
-            print(f"P2 chooses {trump.suit} as the suit")
+            print(f"P2 chooses {trump.suit} as the trump suit.")
             reset = False
             return False
         else:
-            print("Replaying hand")
+            print("Replaying hand.")
             return True
     else:
         if p2choosetrump(crd, False):
@@ -170,7 +170,7 @@ def choosetrump(start):#start is true if P2 deals, returns true if player one is
             return True
         elif p2choosetrump(crd, True):
             trump = card(mostcommon(p2suits), 0)
-            print(f"P2 chooses {trump.suit} as the suit")
+            print(f"P2 chooses {trump.suit} as the trump suit.")
             reset = False
             return False
         elif input("Do you want to choose trump suit?(y/n)") == "y":
@@ -182,7 +182,7 @@ def choosetrump(start):#start is true if P2 deals, returns true if player one is
             reset = False
             return True
         else:
-            print("Replaying hand")
+            print("Replaying hand.")
             return True
 
 
@@ -247,21 +247,26 @@ def choosecard(p1card, do_lead):#do_lead is true if p2 leads and therefore ignor
 
 def returnlegal(leadcard):
     legalhand = []
-    for mamds in p2Hand:
-        if mamds.suit != trump.suit and mamds.color == trump.color and mamds.rank == "Jack" and leadcard.suit == trump.suit:
-            legalhand.append(mamds)
-        if mamds.suit == leadcard.suit:
-            legalhand.append(mamds)
-    if legalhand == []:
-        for ands in p2Hand:
-            if ands.suit != trump.suit and ands.color == trump.color and ands.rank == "Jack":
-                legalhand.append(ands)
-            if ands.suit == trump.suit:
-                legalhand.append(ands)
+    if leadcard.suit != trump.suit and leadcard.color == trump.color and leadcard.rank == trump.rank:
+        for mamds in p2Hand:
+            if mamds.suit == trump.suit:
+                legalhand.append(mamds)
+    else:
+        for mamds in p2Hand:
+            if mamds.suit != trump.suit and mamds.color == trump.color and mamds.rank == "Jack" and leadcard.suit == trump.suit:
+                legalhand.append(mamds)
+            if mamds.suit == leadcard.suit:
+                legalhand.append(mamds)
+        if legalhand == []:
+            for ands in p2Hand:
+                if ands.suit != trump.suit and ands.color == trump.color and ands.rank == "Jack":
+                    legalhand.append(ands)
+                if ands.suit == trump.suit:
+                    legalhand.append(ands)
     return legalhand
 
 
-print("All inputs are case sensitive. Make sure 'y' or 'n' is lowercase and the first letter of suits are uppercase.")
+print("All inputs are case sensitive. Make sure 'y' or 'n' are lowercase and the first letter of suits are uppercase.")
 if input("Do you know the rules of Euchre?(y/n) ") == "n":
     print("Two handed Euchre is played by two players with a deck of 24 cards(the 9, 10, Jack, Queen, and King of every suit. \n"
           "The game begins by dealing each player 5 cards. Whoever was dealt to then has the option to discard one of their \n"
@@ -313,13 +318,6 @@ while play:
         print(f"{x}. {qwwqe}")
         x += 1
     print("}")
-    print("P2 hand")
-    print("{")
-    x = 0
-    for qwwqe in p2Hand:
-        print(f"{x}. {qwwqe}")
-        x += 1
-    print("}")
     player_1_tricks = 0
     player_2_tricks = 0
     player_1_lead = player_1_off
@@ -353,8 +351,10 @@ while play:
                         p1input = int(
                             input("What card do you want to play?(Write the index of the card in your hand) "))
                     p1card = p1Hand[p1input]
+            elif p2card.suit == trump.suit and (p1card.suit != trump.suit and p1card.color == trump.color and p1card.rank == "Jack"):
+                pass
             else:
-                while p1card.suit != p2card.suit and p2card.suit in p1Suits and (p1card.suit != trump.suit and p1card.color == trump.color and p1card.rank == "Jack"):
+                while p1card.suit != p2card.suit and p2card.suit in p1Suits:
                     print("You must follow suit. ")
                     p1input = int(input("What card do you want to play?(Write the index of the card in your hand) "))
                     while not (0 <= p1input < len(p1Hand)):
